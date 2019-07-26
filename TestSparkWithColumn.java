@@ -15,7 +15,7 @@ public class TestSparkWithColumn {
     private static Dataset<Row> queryMySQLData(SparkSession spark) {
         Properties properties = new Properties();
         properties.put("user", "root");
-        properties.put("password", 123456);
+        properties.put("password", "12345678");
         properties.put("driver", "com.mysql.jdbc.Driver");
         // 可以写SQL语句查询数据结果
         return spark.read().jdbc(
@@ -34,10 +34,12 @@ public class TestSparkWithColumn {
 
         Dataset<Row> inputData = queryMySQLData(spark);
 
+        inputData.printSchema();
+
         inputData.show(20, false);
 
         // 方法1：使用functions中的函数，有一些局限性
-        inputData.withColumn("name_length_method1", functions.length(inputData.col("name")));
+        inputData = inputData.withColumn("name_length_method1", functions.length(inputData.col("name")));
 
         // 方法2：自定义注册udf，可以用JAVA代码写处理
         spark.udf().register(
@@ -69,7 +71,7 @@ public class TestSparkWithColumn {
                 DataTypes.LongType);
 
         inputData = inputData.withColumn(
-                "name_length_method2",
+                "name_length_method3",
                 functions.callUDF(
                         "getLength2",
                         inputData.col("id"),
